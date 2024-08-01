@@ -4,10 +4,7 @@ import giorgiaipsaropassione.entities.Customer;
 import giorgiaipsaropassione.entities.Order;
 import giorgiaipsaropassione.entities.Product;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Application {
@@ -29,8 +26,11 @@ public class Application {
             System.out.println("Il cliente: " + customer + " ha fatto " + orders.size() + " ordini");
             System.out.println("Ordini: " + orders);
         });
+        System.out.println("************* ESERCIZIO 2 *****************");
+        getOrdersByClientAndGetTotal().forEach((customer, total) -> System.out.println("Il cliente: " + customer + " ha speso " + total + " €"));
 
-
+        System.out.println("************* 3 *****************");
+        getMostExpensiveProducts().forEach(System.out::println);
     }
 
     // ESERCIZIO 1 --- Raggruppare gli ordini per cliente ---
@@ -40,13 +40,29 @@ public class Application {
                 .collect(Collectors.groupingBy(Order::getCustomer));
     }
 
+    ;
+
     // ESERCIZIO 2 --- Dato un elenco di ordini, calcolare il totale delle vendite di ogni cliente ---
-    
+
+    public static Map<Customer, Double> getOrdersByClientAndGetTotal() {
+        return orders.stream()
+                .collect(Collectors.groupingBy(Order::getCustomer, Collectors.summingDouble(Order::getTotal)));
+    }
+
+    // ESERCIZIO 3 --- Dato un elenco di prodotti, trova il prodotto più costoso ---
+
+    public static List<Product> getMostExpensiveProducts() {
+        return warehouse.stream()
+                .sorted(Comparator.comparing(Product::getPrice).reversed())
+                .limit(3).toList();
+    }
+
     public static void printList(List<?> l) {
         for (Object obj : l) {
             System.out.println(obj);
         }
     }
+
 
     public static void initializeWarehouse() {
         Product iPhone = new Product("IPhone", "Smartphones", 2000.0);
