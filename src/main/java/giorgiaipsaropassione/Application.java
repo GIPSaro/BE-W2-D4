@@ -3,7 +3,10 @@ package giorgiaipsaropassione;
 import giorgiaipsaropassione.entities.Customer;
 import giorgiaipsaropassione.entities.Order;
 import giorgiaipsaropassione.entities.Product;
+import org.apache.commons.io.FileUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,6 +34,27 @@ public class Application {
 
         System.out.println("************* 3 *****************");
         getMostExpensiveProducts().forEach(System.out::println);
+
+        System.out.println("************* 4 *****************");
+        System.out.println(getOrdersAverage());
+
+        System.out.println("************* 5 *****************");
+        System.out.println(getCategoriesAndTotals());
+        
+        System.out.println("************* 6 *****************");
+        try {
+            saveToDisk();
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
+        System.out.println("************* 7 *****************");
+        try {
+            loadFromDisk().forEach(product -> System.out.println(product));
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
+
+
     }
 
     // ESERCIZIO 1 --- Raggruppare gli ordini per cliente ---
@@ -55,6 +79,47 @@ public class Application {
         return warehouse.stream()
                 .sorted(Comparator.comparing(Product::getPrice).reversed())
                 .limit(3).toList();
+    }
+
+    //ESERCIZIO 4
+
+    public static double getOrdersAverage() {
+        return orders.stream()
+                .mapToDouble(Order::getTotal)
+                .average()
+                .orElse(0.0);
+    }
+
+    // ESERCIZIO 5
+    public static Map<String, Double> getCategoriesAndTotals() {
+        return warehouse.stream().collect(Collectors.groupingBy(Product::getCategory, Collectors.summingDouble((Product::getPrice))));
+    }
+
+    // 6
+    public static void saveToDisk() throws IOException {
+        String toWrite = "";
+
+        for (Product product : warehouse) {
+            toWrite += product.getName() + "@" + product.getCategory() + "@" + product.getPrice() + "#";
+        }
+        File file = new File("products.txt");
+        FileUtils.writeStringToFile(file, toWrite, "UTF-8");
+    }
+
+    // 7
+    public static List<Product> loadFromDisk() throws IOException {
+        File file = new File("products.txt");
+
+        String fileString = FileUtils.readFileToString(file, "UTF-8");
+
+        List<String> splitElementiString = Arrays.asList(fileString.split("#"));
+
+        return splitElementiString.stream().map(stringa -> {
+
+            String[] productInfos = stringa.split("@");
+            return new Product(productInfos[0], productInfos[1], Double.parseDouble(productInfos[2]));
+        }).toList();
+
     }
 
     public static void printList(List<?> l) {
